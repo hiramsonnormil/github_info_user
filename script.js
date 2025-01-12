@@ -14,7 +14,12 @@ function buscarinfo(username, userfoto) {
             Accept: 'application/vnd.github.v3+json'
         }
     })
-    .then((response) => response.json())
+    .then((response) => {
+        if (!response.ok) {
+            throw new Error('Usuário não encontrado');
+        }
+        return response.json();
+    })
     .then((data) => {
         liResult.innerHTML = `
             <ul>Id do usuário: ${data.id}</ul>
@@ -26,7 +31,7 @@ function buscarinfo(username, userfoto) {
         userfoto.src = data.avatar_url;
     })
     .catch((error) => {
-        liResult.innerHTML = `<ul>Erro ao buscar informações. Verifique o nome de usuário.</ul>`;
+        liResult.innerHTML = `<ul>${error.message}</ul>`;
         console.error('Erro ao buscar dados do usuário:', error);
     });
 }
