@@ -5,33 +5,28 @@ document.getElementById('userForm').addEventListener('submit', function(event) {
     buscarinfo(username, userfoto);
 });
 
-function buscarinfo(username, userfoto) {
-    const liResult = document.querySelector('.userinfo');
-
-    fetch(`https://api.github.com/users/${username}`, {
-        method: 'GET',
-        headers: {
-            Accept: 'application/vnd.github.v3+json'
+async function buscarinfo(username, userfoto) {
+    var liResult = document.querySelector('.userinfo');
+    try {
+        const request = await fetch(`https://api.github.com/users/${username}`);
+        if (!request.ok) {
+            throw new Error("user not found");
+        } else {
+            const data = await request.json();
+            liResult.innerHTML = `
+                <ul>
+                    <li>Id do usuário: ${data.id}</li>
+                    <li>Criação do usuário: ${data.created_at}</li>
+                    <li>Foto de perfil: <a href="${data.avatar_url}" target="_blank">Acessar aqui</a></li>
+                    <li>Número de seguidores: ${data.followers}</li>
+                    <li>Bio do usuário: <br> ${data.bio}</li>
+                </ul>
+            `;
+            userfoto.src = data.avatar_url;
         }
-    })
-    .then((response) => {
-        if (!response.ok) {
-            throw new Error('Usuário não encontrado');
-        }
-        return response.json();
-    })
-    .then((data) => {
-        liResult.innerHTML = `
-            <ul>Id do usuário: ${data.id}</ul>
-            <ul>Criação do usuário: ${data.created_at}</ul>
-            <ul>Foto de perfil: <a href="${data.avatar_url}" target="_blank">Acessar aqui</a></ul>
-            <ul>Número de seguidores: ${data.followers}</ul>
-            <ul>Bio do usuário: <br> ${data.bio}</ul>
-        `;
-        userfoto.src = data.avatar_url;
-    })
-    .catch((error) => {
-        liResult.innerHTML = `<ul>${error.message}</ul>`;
-        console.error('Erro ao buscar dados do usuário:', error);
-    });
-}
+    } catch (error) {
+        console.error(error);
+        liResult.innerHTML = `<ul> user not found <ul>`;
+        userfoto.src = "";
+    }
+};
